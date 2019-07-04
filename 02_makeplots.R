@@ -17,23 +17,27 @@ ufo.dates <- ufo %>% filter(is.na(event.date) == F &
 ufo.dates$july4 <- ifelse((ufo.dates$event.day == 4 & ufo.dates$event.month == 'Jul'), 1, 0
 )
 
+ufo.dates %>% group_by(july4) %>% summarise( n= sum(n)) %>% mutate(perc = n/sum(n))
+
+head(ufo.dates)
+
+
 ## RIBBON PLOT
 
 # pad with a 'year' so R will recognize as a date: https://mgimond.github.io/ES218/Week02c.html
-ufo.dates$date <- paste("2016", # note it's not really 2016 this is just a placeholder
+ufo.dates$date <- ymd(paste("2016", # note it's not really 2016 this is just a placeholder
                         ufo.dates$event.month, 
-                        ufo.dates$event.day, sep="-")
+                        ufo.dates$event.day, sep="-"))
 
-# code January as the subsequent year so it will appear later in the plot
-ufo.dates$date <- ifelse(ufo.dates$event.month == 'Jan', paste("2017", ufo.dates$event.month, 
-                                                               ufo.dates$event.day, sep="-"), ufo.dates$date)
+write_csv(ufo.dates, 'ufo_dates.csv')
 
 ufo.dates$date <- ymd(ufo.dates$date)
 
 ufo.plot <- ggplot(ufo.dates, aes(x = date, y = n)) +
   scale_x_date(expand = c(0, 0), date_breaks = "month",
                date_minor_breaks = "day", 
-               labels = c( # there's probably a better way to do this but oh well
+               labels = c( 
+                 'Jan',
                  'Feb',
                  'Mar',
                  'Apr',
@@ -44,11 +48,12 @@ ufo.plot <- ggplot(ufo.dates, aes(x = date, y = n)) +
                  'Sept',
                  'Oct',
                  'Nov',
-                 'Dec',
-                 'Jan', '', ''))
+                 'Dec', ''))
 
 ufo.plot.ribbon <- ufo.plot + geom_ribbon(aes(x = date, ymax = n), ymin = 0, fill = '#6497b1',  
                                           color = '#005b96', size = 1)
+
+ufo.plot.ribbon
 
 ufo.plot.ribbon + labs(x = '', y = '', title = "Welcome to Earth!",
                        subtitle = "Cumulative daily reported UFO sightings, January 1995 through December 2018\n",
@@ -71,20 +76,16 @@ ggsave('plot1.eps', width = 8, height = 4.5, device = 'eps')
 ## RIDGE PLOTS BY YEAR
 
 ufo.dates.year <- ufo %>% filter(is.na(event.date) == F & 
-                                   event.year >= 1995 & event.year != 2019 & hoax != 1) %>%
+                                   event.year >= 1995 & hoax != 1 & event.year != 2019) %>%
   group_by(event.day, event.month, event.year) %>%
-  summarise(n = n()) %>% ungroup() %>% group_by(event.year) %>% mutate(year.total = sum(n)) %>%
+  summarise(n = n()) %>% ungroup() %>% group_by(event.year) %>% 
+  mutate(year.total = sum(n)) %>%
   mutate(prop = n/year.total)
 
 # pad with a 'year' so R will recognize as a date: https://mgimond.github.io/ES218/Week02c.html
 ufo.dates.year$date <- paste('2016', # note it's not really 2016 this is just a placeholder
                              ufo.dates.year$event.month, 
                              ufo.dates.year$event.day, sep="-")
-
-# code January as the subsequent year so it will appear later in the plot
-ufo.dates.year$date <- ifelse(ufo.dates.year$event.month == 'Jan', 
-                              paste("2017", ufo.dates.year$event.month, 
-                                    ufo.dates.year$event.day, sep="-"), ufo.dates.year$date)
 
 ufo.dates.year$date <- ymd(ufo.dates.year$date)
 
@@ -97,7 +98,8 @@ ufo.ridge <- ggplot(ufo.dates.year, aes(x = date,
   scale_y_continuous(breaks = seq(1995, 2018, 1)) +
   scale_x_date(expand = c(0, 0), date_breaks = "month",
                date_minor_breaks = "day", 
-               labels = c( # there's probably a better way to do this but oh well
+               labels = c(
+                 'Jan',
                  'Feb',
                  'Mar',
                  'Apr',
@@ -109,7 +111,7 @@ ufo.ridge <- ggplot(ufo.dates.year, aes(x = date,
                  'Oct',
                  'Nov',
                  'Dec',
-                 'Jan', '', ''))
+                 ''))
 
 ufo.ridge +  
   theme(
