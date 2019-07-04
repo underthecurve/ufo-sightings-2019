@@ -33,7 +33,7 @@ Code and date partly based on [this repo](https://github.com/underthecurve/ufo-s
 | event.dow  | day of the week the sighting occurred |
 | notes  | notes from the director of NUFORC on the sighting |
 | hoax  | notes from the director of NUFORC on whether the sighting was thought to be a hoax (=1)|
-| has  | whether the sighting has a note (=1)|
+| has.note  | whether the sighting has a note (=1)|
 
 
 
